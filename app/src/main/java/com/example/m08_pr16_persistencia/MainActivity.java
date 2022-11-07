@@ -12,12 +12,19 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
+import java.io.StringBufferInputStream;
+import java.io.StringReader;
 import java.io.Writer;
 
 public class MainActivity extends AppCompatActivity {
@@ -28,10 +35,37 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         EditText editText = findViewById(R.id.editText);
-        editText.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
 
-            @Override public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+        //Recuperacio text de l'arxiu
+        try {
+
+            //Apertura inputs
+            FileInputStream fileIn = getApplicationContext().openFileInput("dades.txt");
+            InputStreamReader dataIn = new InputStreamReader(fileIn);
+            BufferedReader textIn = new BufferedReader(dataIn);
+
+            //Lectura fitxer
+            String line;
+            while ((line = textIn.readLine()) != null){
+                //Actualitzacio text
+                editText.setText(editText.getText().toString() + line);
+            }
+
+            //Tancament inputs
+            textIn.close();
+            dataIn.close();
+            fileIn.close();
+
+        } catch (IOException e) { //Cas error
+            Toast.makeText(getApplicationContext(), "ERROR: UNABLE_TO_LOAD_FILE_CONTENTS", Toast.LENGTH_SHORT).show();
+            Log.i("ERROR", e.getStackTrace().toString());
+        }
+
+        //Actualitzacio text arxiu
+        editText.addTextChangedListener(new TextWatcher() {
+
+            @Override public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {} //IGNORE
+            @Override public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {} //IGNORE
 
             @Override public void afterTextChanged(Editable editable) {
                 try {
@@ -47,13 +81,14 @@ public class MainActivity extends AppCompatActivity {
                     textOut.close();
                     fileOut.close();
 
-                } catch (Exception e) { //Cas ERROR
-                    Toast.makeText(getApplicationContext(), "ERROR: UNABLE_TO_USE_FILE ", Toast.LENGTH_SHORT).show();
+                } catch (IOException e) { //Cas ERROR
+                    Toast.makeText(getApplicationContext(), "ERROR: UNABLE_TO_UPDATE_FILE", Toast.LENGTH_SHORT).show();
                     Log.i("ERROR", e.getStackTrace().toString());
                 }
             }
         });
 
+        //Mode de boto (sense us en aquesta versio)
         Button button = findViewById(R.id.button);
         button.setVisibility(Button.INVISIBLE);
         /*
